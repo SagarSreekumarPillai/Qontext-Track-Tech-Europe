@@ -76,6 +76,28 @@ function fromCrm(content: string): AlternateFact[] {
     });
   }
 
+  const ownerField = content.match(/owner\s+([A-Za-z]+(?:\s+[A-Za-z]+){0,2})/i);
+  if (ownerField) {
+    facts.push({
+      entityType: "customer",
+      entityId: slugify(account),
+      fact: "account_owner",
+      value: ownerField[1].trim(),
+      confidence: 0.92,
+    });
+  }
+
+  const stageField = content.match(/stage\s+([A-Za-z][A-Za-z\s-]{1,30})/i);
+  if (stageField) {
+    facts.push({
+      entityType: "customer",
+      entityId: slugify(account),
+      fact: "status",
+      value: stageField[1].trim(),
+      confidence: 0.87,
+    });
+  }
+
   const arr = content.match(/(€|\$)\s?([0-9][0-9,\.]*)\s*(arr|acv|mrr)?/i);
   if (arr) {
     facts.push({
@@ -184,6 +206,16 @@ function fromTicket(content: string, sourceId: string): AlternateFact[] {
       confidence: 0.98,
     });
   }
+  const textualPriority = content.match(/priority[:\s]+(low|medium|high|urgent|highest)/i);
+  if (textualPriority) {
+    facts.push({
+      entityType: "task",
+      entityId: slugify(sourceId),
+      fact: "priority",
+      value: textualPriority[1].toUpperCase(),
+      confidence: 0.9,
+    });
+  }
   const owner = content.match(/owner[:\s]+([A-Za-z][A-Za-z\s-]{1,40})/i);
   if (owner) {
     facts.push({
@@ -192,6 +224,26 @@ function fromTicket(content: string, sourceId: string): AlternateFact[] {
       fact: "account_owner",
       value: owner[1].trim(),
       confidence: 0.9,
+    });
+  }
+  const assignee = content.match(/assignee[:\s]+([A-Za-z][A-Za-z\s-]{1,40})/i);
+  if (assignee) {
+    facts.push({
+      entityType: "task",
+      entityId: slugify(sourceId),
+      fact: "account_owner",
+      value: assignee[1].trim(),
+      confidence: 0.86,
+    });
+  }
+  const statusField = content.match(/status[:\s]+([A-Za-z][A-Za-z\s-]{1,40})/i);
+  if (statusField) {
+    facts.push({
+      entityType: "task",
+      entityId: slugify(sourceId),
+      fact: "status",
+      value: statusField[1].trim(),
+      confidence: 0.89,
     });
   }
   const impact = content.match(/(incident|outage|failure[s]?)[\s:.-]+(.+?)(\.|$)/i);
@@ -283,6 +335,16 @@ function fromCollab(content: string): AlternateFact[] {
       fact: "risk_note",
       value: blocker[1].trim(),
       confidence: 0.82,
+    });
+  }
+  const ownsTask = content.match(/([A-Za-z][A-Za-z\s-]{1,30})\s+owns\s+(.+?)(?:\.|$)/i);
+  if (ownsTask) {
+    facts.push({
+      entityType: "task",
+      entityId: slugify(ownsTask[2]),
+      fact: "account_owner",
+      value: ownsTask[1].trim(),
+      confidence: 0.85,
     });
   }
   return facts;
