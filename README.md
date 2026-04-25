@@ -90,6 +90,41 @@ Use the `Run Next Demo Step` button repeatedly:
 
 Use `Reset Demo State` before each live run.
 
+## Dataset Access Note (Hackathon Constraint)
+
+For this submission, direct dataset API access was not consistently available during implementation/testing (gated/auth-dependent access and quota friction in live environment).  
+To keep the system verifiable and demo-stable, we used a **local mirror of the official Qontext dataset files** in:
+
+- `Dataset From Qontext/Dataset`
+
+The import pipeline was intentionally built to remain connector-compatible and format-agnostic:
+- direct JSON/CSV payload ingest
+- platform-style export adapters (Salesforce/HubSpot/Zendesk/Jira/Slack patterns)
+- compatibility preview + data quality diagnostics before ingest
+
+This means the current approach is a practical fallback for hackathon reliability, while preserving compatibility with direct API/connector ingestion.
+
+## Judge Quick Start
+
+Use this sequence to verify end-to-end ingestion and live state updates:
+
+1. Start app and open `http://localhost:3000`.
+2. In **Dynamic Dataset Ingestion**:
+   - upload a real file from `Dataset From Qontext/Dataset` (example: `IT_Service_Management/it_tickets.json` or `Business_and_Management/clients.json`)
+   - click **Validate Import Compatibility** and confirm adapter + Data Quality Report appear.
+3. Click **Ingest Dataset Payload**.
+4. Verify live changes across panels:
+   - **Left**: incoming records list grows with newly ingested records
+   - **Center**: virtual file system and memory facts update for newly inferred entities
+   - **Right**: provenance/graph/review queue/update history reflect new extracted facts and decisions
+5. Repeat with a different source category (e.g. HR or CRM file) and confirm metrics/relationships change again.
+
+What this demonstrates:
+- records are parsed from external dataset files at runtime
+- extraction and routing occur on the ingested content
+- provenance and update history are generated dynamically
+- the system state evolves with each new import (not pre-scripted static data)
+
 ## Technical Documentation Index
 - `API_FRAMEWORKS_TOOLS.md`: complete API reference and stack/tooling documentation.
 - `TECHNICAL_DOCUMENTATION.md`: architecture, data flow, model/routing behavior, and jury evaluation guidance.
