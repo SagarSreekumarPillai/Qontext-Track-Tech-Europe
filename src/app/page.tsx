@@ -27,6 +27,36 @@ function formatTimestamp(timestamp: string) {
   return iso.replace("T", " ").replace("Z", " UTC");
 }
 
+const INTRO_SLIDES = [
+  {
+    title: "Welcome to LoomOS",
+    subtitle: "Operating system for company memory",
+    points: [
+      "Ingest fragmented company records from CRM, email, HR, tickets, policies, and IT systems.",
+      "Normalize raw records into machine-readable entity memory files.",
+      "Make enterprise state legible to both humans and AI systems.",
+    ],
+  },
+  {
+    title: "Inspectable Virtual Memory",
+    subtitle: "Files + graph + provenance",
+    points: [
+      "Browse entities in a virtual file system across customers, employees, projects, and policies.",
+      "Inspect relationship graph links to understand cross-entity context.",
+      "Trace every fact to source system, record id, confidence, and update time.",
+    ],
+  },
+  {
+    title: "Controlled Automation",
+    subtitle: "Auto where clear, human where ambiguous",
+    points: [
+      "High-confidence updates auto-apply and update memory/graph state.",
+      "Ambiguous updates route into a human review queue with full evidence.",
+      "Data quality report validates imported datasets before processing.",
+    ],
+  },
+];
+
 export default function Home() {
   const [state, setState] = useState<QontextState>(INITIAL_STATE);
   const [selectedPath, setSelectedPath] = useState("/customers/acme.md");
@@ -52,6 +82,15 @@ export default function Home() {
       warnings: string[];
     };
   } | null>(null);
+  const [showIntro, setShowIntro] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      return window.localStorage.getItem("loomos_intro_seen") !== "1";
+    } catch {
+      return true;
+    }
+  });
+  const [introStep, setIntroStep] = useState(0);
 
   const selectedEntity = useMemo(
     () => Object.values(state.entities).find((entity) => entity.filePath === selectedPath),
@@ -70,6 +109,7 @@ export default function Home() {
 
   const dynamicFileGroups = useMemo(() => deriveFileGroups(state), [state]);
   const lastChange = state.updateHistory[0];
+  const activeIntro = INTRO_SLIDES[introStep];
 
   const challengeInsights = useMemo(() => {
     const allFacts = Object.values(state.entities).flatMap((entity) => entity.facts);
@@ -176,6 +216,15 @@ export default function Home() {
     }
   };
 
+  const closeIntro = () => {
+    setShowIntro(false);
+    try {
+      window.localStorage.setItem("loomos_intro_seen", "1");
+    } catch {
+      // ignore localStorage access issues
+    }
+  };
+
   const ingestSingleRecord = async () => {
     if (!inputContent.trim()) {
       setIngestMessage("Provide record content before ingestion.");
@@ -271,6 +320,67 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#090d17] text-slate-100">
+      {showIntro ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#050913]/95 p-4">
+          <div className="w-full max-w-3xl rounded-xl border border-cyan-500/30 bg-[#0b1424] p-6 shadow-2xl shadow-cyan-900/20">
+            <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">LoomOS Guided Loading</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">{activeIntro.title}</h2>
+            <p className="mt-1 text-sm text-slate-300">{activeIntro.subtitle}</p>
+            <div className="mt-4 space-y-2">
+              {activeIntro.points.map((point) => (
+                <p key={point} className="rounded-md bg-slate-900/60 px-3 py-2 text-sm text-slate-200">
+                  {point}
+                </p>
+              ))}
+            </div>
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                {INTRO_SLIDES.map((slide, idx) => (
+                  <button
+                    key={slide.title}
+                    onClick={() => setIntroStep(idx)}
+                    className={`h-2 w-8 rounded-full ${
+                      idx === introStep ? "bg-cyan-300" : "bg-slate-600"
+                    }`}
+                    title={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={closeIntro}
+                  className="rounded-md border border-slate-500/70 px-3 py-1.5 text-sm text-slate-200"
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={() => setIntroStep((s) => Math.max(0, s - 1))}
+                  disabled={introStep === 0}
+                  className="rounded-md border border-slate-500/70 px-3 py-1.5 text-sm text-slate-200 disabled:opacity-40"
+                >
+                  Back
+                </button>
+                {introStep < INTRO_SLIDES.length - 1 ? (
+                  <button
+                    onClick={() => setIntroStep((s) => Math.min(INTRO_SLIDES.length - 1, s + 1))}
+                    className="rounded-md bg-cyan-500 px-3 py-1.5 text-sm font-semibold text-slate-950"
+                  >
+                    Next
+                  </button>
+                ) : (
+                  <button
+                    onClick={closeIntro}
+                    className="rounded-md bg-emerald-500 px-3 py-1.5 text-sm font-semibold text-emerald-950"
+                  >
+                    Enter LoomOS
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <header className="border-b border-slate-700/60 bg-[#0c1220] px-6 py-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="max-w-3xl">
@@ -329,6 +439,38 @@ export default function Home() {
               ? `${lastChange.action} · ${lastChange.factKey}: ${lastChange.oldValue} → ${lastChange.newValue}`
               : "No updates yet. Ingest a record to see memory evolution."}
           </p>
+        </div>
+        <div className="mt-2 rounded-lg border border-slate-700/70 bg-[#0d1425] px-3 py-2 text-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-slate-300">
+              <span className="text-cyan-300">Guided Demo:</span>{" "}
+              {[
+                "Open customer memory file",
+                "Auto-apply high-confidence update",
+                "Queue ambiguous update for review",
+                "Approve queued update",
+              ][Math.min(demoStep, 3)]}
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={runNextDemoStep}
+                className="rounded bg-cyan-500 px-2 py-1 text-xs font-semibold text-slate-950"
+              >
+                Run Next Step
+              </button>
+              <button
+                onClick={() => {
+                  setState(INITIAL_STATE);
+                  setDemoStep(0);
+                  setSelectedPath("/customers/acme.md");
+                  setSelectedFactId("f_owner");
+                }}
+                className="rounded border border-slate-500/70 px-2 py-1 text-xs text-slate-200"
+              >
+                Reset Walkthrough
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
