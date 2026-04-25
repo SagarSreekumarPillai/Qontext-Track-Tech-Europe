@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "data:generate": "node scripts/generate_training_data.mjs",
+    "model:train": "python3 scripts/train_router_model.py",
+    "model:eval": "python3 scripts/eval_router_model.py",
+    "benchmark:extract": "node scripts/run_extraction_benchmark.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.50.1",

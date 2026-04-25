@@ -14,6 +14,7 @@ import {
   type RawRecord,
   type SourceType,
 } from "@/lib/qontext";
+import { parseDatasetPayload } from "@/lib/importAdapters";
 
 function confidenceTone(confidence: number) {
   if (confidence > 0.9) return "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
@@ -177,45 +178,19 @@ export default function Home() {
     setIngestMessage(`Ingested ${record.sourceType.toUpperCase()} ${record.sourceId}`);
   };
 
-  const parseCsvToRecords = (csv: string): RawRecord[] => {
-    const lines = csv.split(/\r?\n/).filter(Boolean);
-    if (lines.length < 2) return [];
-    const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
-    const index = (name: string) => headers.indexOf(name);
-    return lines.slice(1).map((line, idx) => {
-      const cols = line.split(",").map((c) => c.trim());
-      const sourceType = (cols[index("sourcetype")] || "crm") as SourceType;
-      const sourceId = cols[index("sourceid")] || `CSV-${idx + 1}`;
-      const content = cols[index("content")] || "";
-      const timestamp = cols[index("timestamp")] || new Date().toISOString();
-      return { id: `csv-${Date.now()}-${idx}`, sourceType, sourceId, content, timestamp };
-    });
-  };
-
-  const ingestBulkPayload = async () => {
+  const ingestBulkPayload = async (attachedFileName?: string) => {
     const payload = bulkPayload.trim();
     if (!payload) {
       setIngestMessage("Paste JSON array or CSV payload first.");
       return;
     }
-    let records: RawRecord[] = [];
-    try {
-      const parsed = JSON.parse(payload);
-      if (Array.isArray(parsed)) {
-        records = parsed.map((item, idx) => ({
-          id: String(item.id ?? `json-${Date.now()}-${idx}`),
-          sourceType: (item.sourceType ?? "crm") as SourceType,
-          sourceId: String(item.sourceId ?? `JSON-${idx + 1}`),
-          content: String(item.content ?? ""),
-          timestamp: String(item.timestamp ?? new Date().toISOString()),
-        }));
-      }
-    } catch {
-      records = parseCsvToRecords(payload);
-    }
+    const adapted = parseDatasetPayload(payload, attachedFileName);
+    const records: RawRecord[] = adapted.records;
 
     if (!records.length) {
-      setIngestMessage("Could not parse payload. Expected JSON array or CSV with sourceType,sourceId,content,timestamp.");
+      setIngestMessage(
+        "Could not parse payload. Supported: Salesforce/HubSpot/Zendesk/Jira CSV, Slack JSON, generic JSON/CSV."
+      );
       return;
     }
 
@@ -224,14 +199,17 @@ export default function Home() {
         await processIncomingRecord(record);
       }
     }
-    setIngestMessage(`Ingested ${records.length} records from judge dataset payload.`);
+    setIngestMessage(`Ingested ${records.length} records using ${adapted.adapterName} adapter.`);
   };
 
   const handleDatasetFile = async (file: File | null) => {
     if (!file) return;
     const text = await file.text();
     setBulkPayload(text);
-    setIngestMessage(`Loaded ${file.name}. Click "Ingest Dataset Payload".`);
+    const preview = parseDatasetPayload(text, file.name);
+    setIngestMessage(
+      `Loaded ${file.name}. Detected ${preview.adapterName} adapter with ${preview.records.length} compatible records.`
+    );
   };
 
   return (
@@ -366,11 +344,14 @@ export default function Home() {
                 className="w-full rounded border border-slate-600 bg-slate-900 px-2 py-1 text-xs"
               />
               <button
-                onClick={ingestBulkPayload}
+                onClick={() => void ingestBulkPayload()}
                 className="w-full rounded bg-cyan-500 px-2 py-1 text-xs font-semibold text-slate-950"
               >
                 Ingest Dataset Payload
               </button>
+              <p className="text-[10px] text-slate-400">
+                Compatible exports: Salesforce, HubSpot, Zendesk, Jira CSV; Slack JSON; generic JSON/CSV/TXT.
+              </p>
               {ingestMessage ? <p className="text-[11px] text-cyan-200">{ingestMessage}</p> : null}
             </div>
           </div>
