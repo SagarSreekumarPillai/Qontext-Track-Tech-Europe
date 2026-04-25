@@ -86,6 +86,42 @@ function pick(row: string[], map: HeaderMap, names: string[]) {
   return "";
 }
 
+function inferSourceTypeFromHeaders(headers: string[]): SourceType {
+  const joined = headers.join("|").toLowerCase();
+  if (/(deal|account|customer|sales|arr|opportunity)/.test(joined)) return "crm";
+  if (/(email|subject|from|to|cc)/.test(joined)) return "email";
+  if (/(employee|resume|salary|department|joining|hire)/.test(joined)) return "hr";
+  if (/(ticket|issue|priority|assignee|requester|incident)/.test(joined)) return "ticket";
+  if (/(policy|sop|compliance|rule|guideline)/.test(joined)) return "policy";
+  if (/(workspace|slack|message|thread|post|comment)/.test(joined)) return "collab";
+  if (/(service|cmdb|asset|slo|dependency|uptime)/.test(joined)) return "it";
+  return "business";
+}
+
+function inferSourceTypeFromObject(row: Record<string, unknown>): SourceType {
+  const keys = Object.keys(row).map((k) => k.toLowerCase()).join("|");
+  if (/(email_id|thread_id|sender_email|recipient_email|subject|body)/.test(keys)) return "email";
+  if (/(emp_id|doj|salary|performance|leaves|department|category|level)/.test(keys)) return "hr";
+  if (/(ticket|issue|priority|status|requester|assignee|chat_id)/.test(keys)) return "ticket";
+  if (/(repo_name|language|issues|pull_request|commit|github)/.test(keys)) return "it";
+  if (/(title|post|author|conversation_id|sender_emp_id|recipient_emp_id)/.test(keys)) return "collab";
+  if (/(client_id|business_name|monthly_revenue|poc_status|customer_id|product_id|sales)/.test(keys)) return "crm";
+  if (/(policy|sop|guideline|compliance|rule)/.test(keys)) return "policy";
+  return "business";
+}
+
+function synthesizeFromRow(headers: string[], row: string[], maxPairs = 5): string {
+  const parts: string[] = [];
+  for (let i = 0; i < headers.length && parts.length < maxPairs; i += 1) {
+    const key = headers[i];
+    const value = row[i] ?? "";
+    if (!value || !value.trim()) continue;
+    if (["id", "record id", "sourceid", "source_id"].includes(key)) continue;
+    parts.push(`${key} ${value}`.trim());
+  }
+  return parts.join("; ");
+}
+
 function record(id: string, sourceType: SourceType, sourceId: string, content: string, timestamp?: string): RawRecord {
   return {
     id,
@@ -99,10 +135,13 @@ function record(id: string, sourceType: SourceType, sourceId: string, content: s
 function adaptGenericCsv(text: string): AdapterResult {
   const { headers, rows } = parseCsv(text);
   const map = indexHeaders(headers);
+  const defaultType = inferSourceTypeFromHeaders(headers);
   const inferredSourceCounts: Partial<Record<SourceType, number>> = {};
   const warnings: string[] = [];
   const materialized = rows.map((row, idx) => {
-    const sourceType = normalizeSourceType(pick(row, map, ["sourcetype", "source_type", "system"]) || "crm");
+    const sourceType = normalizeSourceType(
+      pick(row, map, ["sourcetype", "source_type", "system"]) || defaultType
+    );
     inferredSourceCounts[sourceType] = (inferredSourceCounts[sourceType] ?? 0) + 1;
     const sourceId = pick(row, map, ["sourceid", "source_id", "id", "record_id"]) || `CSV-${idx + 1}`;
     const direct = pick(row, map, ["content", "text", "body", "description", "notes"]);
@@ -121,7 +160,7 @@ function adaptGenericCsv(text: string): AdapterResult {
     ]
       .filter(Boolean)
       .join("; ");
-    const content = synthesized || direct;
+    const content = synthesized || direct || synthesizeFromRow(headers, row);
     const timestamp = pick(row, map, ["timestamp", "created_at", "updated_at", "date"]);
     const raw = record(`csv-${idx}-${Date.now()}`, sourceType, sourceId, content, timestamp);
     if (!raw.content.trim()) {
@@ -260,18 +299,25 @@ function adaptJson(input: unknown): AdapterResult {
       .map((item, idx) => {
         if (!item || typeof item !== "object") return null;
         const row = item as Record<string, unknown>;
-        const sourceType = normalizeSourceType(String(row.sourceType ?? row.source_type ?? row.system ?? "business"));
+        const sourceType = normalizeSourceType(
+          String(row.sourceType ?? row.source_type ?? row.system ?? inferSourceTypeFromObject(row))
+        );
         inferredSourceCounts[sourceType] = (inferredSourceCounts[sourceType] ?? 0) + 1;
         const sourceId = String(row.sourceId ?? row.source_id ?? row.id ?? `JSON-${idx + 1}`);
-        const content =
-          String(
-            row.content ??
-              row.text ??
-              row.body ??
-              row.description ??
-              row.notes ??
-              `Record ${sourceId} from ${sourceType} export.`
-          );
+        let content = String(row.content ?? row.text ?? row.body ?? row.description ?? row.notes ?? "");
+        const entries = Object.entries(row)
+          .filter(([k, v]) => !["id", "sourceId", "source_id", "record_id"].includes(k) && String(v).trim())
+          .slice(0, 8)
+          .map(([k, v]) => `${k} ${String(v).replace(/\s+/g, " ").slice(0, 280)}`);
+        const entryText = entries.join("; ");
+        if (!content.trim()) {
+          content = entryText;
+        } else if (entryText) {
+          content = `${content}; ${entryText}`;
+        }
+        if (!content.trim()) {
+          content = `Record ${sourceId} from ${sourceType} export.`;
+        }
         const timestamp = String(row.timestamp ?? row.created_at ?? row.updated_at ?? new Date().toISOString());
         return record(`json-${idx}-${Date.now()}`, sourceType, sourceId, content, timestamp);
       })
@@ -371,20 +417,25 @@ export function parseDatasetPayload(payload: string, fileName?: string): Adapter
 
   if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
     try {
-      const parsed = JSON.parse(stripJsonComments(trimmed));
-      return adaptJson(parsed);
+      const parsedDirect = JSON.parse(trimmed);
+      return adaptJson(parsedDirect);
     } catch {
-      return {
-        records: [],
-        adapterName: "json-parse-failed",
-        diagnostics: {
-          totalRows: 0,
-          parsedRows: 0,
-          droppedRows: 0,
-          inferredSourceCounts: {},
-          warnings: ["JSON parse failed even after cleanup."],
-        },
-      };
+      try {
+        const parsedClean = JSON.parse(stripJsonComments(trimmed));
+        return adaptJson(parsedClean);
+      } catch {
+        return {
+          records: [],
+          adapterName: "json-parse-failed",
+          diagnostics: {
+            totalRows: 0,
+            parsedRows: 0,
+            droppedRows: 0,
+            inferredSourceCounts: {},
+            warnings: ["JSON parse failed even after cleanup."],
+          },
+        };
+      }
     }
   }
 
