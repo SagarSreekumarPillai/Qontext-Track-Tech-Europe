@@ -53,6 +53,20 @@ LoomOS converts fragmented enterprise records into structured memory with:
    - update history timeline
    - pending review queue
 
+## Dataset Ingestion Mode Used for This Submission
+
+During hackathon implementation, direct remote dataset API access was not consistently reliable (authentication-gated access and live quota/runtime constraints).  
+To ensure reproducible evaluation, we ingested the provided company dataset from a local mirror:
+
+- `Dataset From Qontext/Dataset`
+
+This is a **delivery fallback**, not a product limitation. The system still supports connector-compatible ingestion patterns:
+- JSON/CSV payload ingestion
+- adapter detection for common enterprise exports
+- pre-ingest compatibility preview and data quality reporting
+
+Judges can therefore evaluate the same end-to-end behavior (normalization, extraction, provenance, routing, review governance) using the local dataset path with deterministic results.
+
 ## Extraction and Routing Behavior
 
 ### Primary Extraction Path
