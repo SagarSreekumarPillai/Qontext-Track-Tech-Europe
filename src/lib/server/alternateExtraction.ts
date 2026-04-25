@@ -47,6 +47,102 @@ function clampConfidence(value: number) {
   return Math.max(0, Math.min(1, value));
 }
 
+function parseStructuredPairs(content: string): Array<{ key: string; value: string }> {
+  return content
+    .split(";")
+    .map((chunk) => chunk.trim())
+    .filter(Boolean)
+    .map((chunk) => {
+      const parts = chunk.split(/\s+/);
+      if (parts.length < 2) return null;
+      const key = parts[0].toLowerCase().replace(/[^a-z0-9_]+/g, "_");
+      const value = parts.slice(1).join(" ").trim();
+      if (!key || !value) return null;
+      return { key, value };
+    })
+    .filter((x): x is { key: string; value: string } => Boolean(x));
+}
+
+function getPairValue(pairs: Array<{ key: string; value: string }>, keys: string[]): string | null {
+  for (const target of keys) {
+    const hit = pairs.find((p) => p.key === target);
+    if (hit) return hit.value;
+  }
+  return null;
+}
+
+function structuredFallbackFacts(input: AlternateExtractionInput): AlternateFact[] {
+  const pairs = parseStructuredPairs(input.content);
+  if (pairs.length === 0) return [];
+
+  let entityType: AlternateFact["entityType"] = "project";
+  if (input.sourceType === "hr") entityType = "employee";
+  else if (input.sourceType === "crm" || input.sourceType === "business") entityType = "customer";
+  else if (input.sourceType === "ticket" || input.sourceType === "email") entityType = "task";
+  else if (input.sourceType === "policy") entityType = "policy";
+  else if (input.sourceType === "it") entityType = "process";
+
+  const entityId =
+    slugify(
+      getPairValue(pairs, [
+        "client_id",
+        "customer_id",
+        "product_id",
+        "emp_id",
+        "business_name",
+        "name",
+        "issue_key",
+      ]) || input.sourceId
+    ) || slugify(input.sourceId);
+
+  const keyMap: Record<string, string> = {
+    business_name: "status",
+    customer_name: "status",
+    industry: "industry",
+    business_type: "business_type",
+    monthly_revenue: "forecast_metric",
+    poc_status: "status",
+    relationship_description: "risk_note",
+    category: "role",
+    name: "status",
+    author: "account_owner",
+    title: "status",
+    post: "status",
+    level: "status",
+    performance_rating: "priority",
+    salary: "forecast_metric",
+    description: "status",
+    review_content: "status",
+    subject: "status",
+    product_id: "status",
+    discounted_price: "forecast_metric",
+    actual_price: "forecast_metric",
+    discount_percentage: "forecast_metric",
+    date_of_purchase: "status",
+    issues_title: "risk_note",
+    repo_name: "status",
+    language: "status",
+    priority: "priority",
+    status: "status",
+    importance: "priority",
+  };
+
+  const facts: AlternateFact[] = [];
+  for (const pair of pairs) {
+    const fact = keyMap[pair.key];
+    if (!fact) continue;
+    facts.push({
+      entityType,
+      entityId,
+      fact,
+      value: pair.value,
+      confidence: 0.74,
+      ambiguityReason: "Derived from structured key-value export row.",
+    });
+  }
+  return facts.slice(0, 5);
+}
+
 function fromCrm(content: string): AlternateFact[] {
   const facts: AlternateFact[] = [];
   const lc = content.toLowerCase();
@@ -387,6 +483,29 @@ function fromCollab(content: string): AlternateFact[] {
       confidence: 0.85,
     });
   }
+  const lc = content.toLowerCase();
+  if (!project && !blocker && !ownsTask) {
+    if (lc.includes("project timeline") || lc.includes("product launch") || lc.includes("milestone")) {
+      facts.push({
+        entityType: "project",
+        entityId: "general-collab",
+        fact: "status",
+        value: "timeline coordination discussion",
+        confidence: 0.72,
+        ambiguityReason: "Derived from collaboration transcript context.",
+      });
+    }
+    if (lc.includes("vendor management") || lc.includes("delay") || lc.includes("bottleneck")) {
+      facts.push({
+        entityType: "project",
+        entityId: "general-collab",
+        fact: "risk_note",
+        value: "vendor-related delays",
+        confidence: 0.7,
+        ambiguityReason: "Derived from collaboration transcript risk cues.",
+      });
+    }
+  }
   return facts;
 }
 
@@ -501,6 +620,10 @@ export function extractFactsWithAlternateEngine(input: AlternateExtractionInput)
       break;
     default:
       facts = [];
+  }
+
+  if (facts.length === 0) {
+    facts = structuredFallbackFacts(normalizedInput);
   }
 
   const deduped = new Map<string, AlternateFact>();
