@@ -51,6 +51,7 @@ function fromCrm(content: string): AlternateFact[] {
   const facts: AlternateFact[] = [];
   const lc = content.toLowerCase();
   const account = pickAccountName(content) ?? "unknown-account";
+  const explicitOwnerChange = /account\s+owner\s+changed\s+to\s+/i.test(content);
 
   const reassigned = content.match(/reassigned\s+from\s+([A-Za-z]+\s*[A-Za-z]*)\s+to\s+([A-Za-z]+\s*[A-Za-z]*)/i);
   if (reassigned) {
@@ -63,8 +64,21 @@ function fromCrm(content: string): AlternateFact[] {
       ambiguityReason: "Owner transition detected from CRM reassignment event.",
     });
   }
+  const reassignedTo = content.match(/reassigned\s+to\s+([A-Za-z]+(?:\s+[A-Za-z]+){0,2})/i);
+  if (reassignedTo) {
+    facts.push({
+      entityType: "customer",
+      entityId: slugify(account),
+      fact: "account_owner",
+      value: reassignedTo[1].trim(),
+      confidence: 0.9,
+      ambiguityReason: "Owner inferred from reassignment target.",
+    });
+  }
 
-  const owns = content.match(/([A-Za-z]+\s*[A-Za-z]*)\s+(owns|owner(?:\s+of)?)\s+([A-Za-z0-9][A-Za-z0-9\s-]{1,40})/i);
+  const owns = explicitOwnerChange
+    ? null
+    : content.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(owns|owner(?:\s+of)?)\s+([A-Za-z0-9][A-Za-z0-9\s-]{1,40})/);
   if (owns) {
     facts.push({
       entityType: "customer",
@@ -76,14 +90,30 @@ function fromCrm(content: string): AlternateFact[] {
     });
   }
 
-  const ownerField = content.match(/owner\s+([A-Za-z]+(?:\s+[A-Za-z]+){0,2})/i);
+  const ownerField = explicitOwnerChange
+    ? null
+    : content.match(/owner[:\s]+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/);
   if (ownerField) {
+    const ownerVal = ownerField[1].trim();
+    if (!/^(changed|from|to|account)$/i.test(ownerVal)) {
     facts.push({
       entityType: "customer",
       entityId: slugify(account),
       fact: "account_owner",
-      value: ownerField[1].trim(),
+      value: ownerVal,
       confidence: 0.92,
+    });
+    }
+  }
+  const ownerChanged = content.match(/owner\s+changed\s+to\s+([A-Za-z]+(?:\s+[A-Za-z]+){0,2})/i);
+  if (ownerChanged) {
+    facts.push({
+      entityType: "customer",
+      entityId: slugify(account),
+      fact: "account_owner",
+      value: ownerChanged[1].trim(),
+      confidence: 0.89,
+      ambiguityReason: "Owner change inferred from change statement.",
     });
   }
 
@@ -106,6 +136,16 @@ function fromCrm(content: string): AlternateFact[] {
       fact: "forecast_metric",
       value: `${arr[1]}${arr[2]}${arr[3] ? ` ${arr[3].toUpperCase()}` : ""}`,
       confidence: 0.91,
+    });
+  }
+  const amountPlain = content.match(/amount\s+is?\s*([0-9][0-9,\.]*)/i) || content.match(/amount\s*([0-9][0-9,\.]*)/i);
+  if (amountPlain) {
+    facts.push({
+      entityType: "customer",
+      entityId: slugify(account),
+      fact: "forecast_metric",
+      value: amountPlain[1],
+      confidence: 0.86,
     });
   }
 
@@ -163,7 +203,7 @@ function fromHr(content: string): AlternateFact[] {
       confidence: 0.93,
     });
   }
-  const joinedSimple = content.match(/([A-Za-z]+\s+[A-Za-z]+)\s+joined\s+as\s+(.+?)\s+on\s+(\d{4}-\d{2}-\d{2})/i);
+  const joinedSimple = content.match(/([A-Za-z]+(?:\s+[A-Za-z]+)?)\s+joined\s+as\s+(.+?)\s+on\s+(\d{4}-\d{2}-\d{2})/i);
   if (joinedSimple) {
     facts.push({
       entityType: "employee",
