@@ -15,6 +15,7 @@ export async function POST(request: Request) {
       ok: true,
       adapter: parsed.adapterName,
       count: parsed.records.length,
+      diagnostics: parsed.diagnostics,
       preview: parsed.records.slice(0, 3),
     });
   } catch (error) {

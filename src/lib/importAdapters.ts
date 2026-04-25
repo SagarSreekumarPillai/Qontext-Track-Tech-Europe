@@ -3,6 +3,13 @@ import type { RawRecord, SourceType } from "@/lib/qontext";
 type AdapterResult = {
   records: RawRecord[];
   adapterName: string;
+  diagnostics?: {
+    totalRows: number;
+    parsedRows: number;
+    droppedRows: number;
+    inferredSourceCounts: Partial<Record<SourceType, number>>;
+    warnings: string[];
+  };
 };
 
 type HeaderMap = Record<string, number>;
@@ -60,6 +67,10 @@ function parseCsv(text: string): { headers: string[]; rows: string[][] } {
   return { headers, rows };
 }
 
+function stripJsonComments(input: string): string {
+  return input.replace(/\/\/.*$/gm, "").replace(/,\s*]/g, "]").replace(/,\s*}/g, "}");
+}
+
 function indexHeaders(headers: string[]): HeaderMap {
   const map: HeaderMap = {};
   headers.forEach((h, i) => {
@@ -88,14 +99,48 @@ function record(id: string, sourceType: SourceType, sourceId: string, content: s
 function adaptGenericCsv(text: string): AdapterResult {
   const { headers, rows } = parseCsv(text);
   const map = indexHeaders(headers);
-  const records = rows.map((row, idx) => {
+  const inferredSourceCounts: Partial<Record<SourceType, number>> = {};
+  const warnings: string[] = [];
+  const materialized = rows.map((row, idx) => {
     const sourceType = normalizeSourceType(pick(row, map, ["sourcetype", "source_type", "system"]) || "crm");
+    inferredSourceCounts[sourceType] = (inferredSourceCounts[sourceType] ?? 0) + 1;
     const sourceId = pick(row, map, ["sourceid", "source_id", "id", "record_id"]) || `CSV-${idx + 1}`;
-    const content = pick(row, map, ["content", "text", "body", "description", "notes"]);
+    const direct = pick(row, map, ["content", "text", "body", "description", "notes"]);
+    const account = pick(row, map, ["acct name", "account name", "company", "customer", "deal name"]);
+    const owner = pick(row, map, ["ownername", "owner", "account owner", "deal owner", "assignee"]);
+    const stage = pick(row, map, ["deal_stage", "deal stage", "status", "stage"]);
+    const amount = pick(row, map, ["arr €", "arr", "amount", "annual revenue"]);
+    const subject = pick(row, map, ["subject", "summary", "title"]);
+    const synthesized = [
+      account && `account ${account}`,
+      owner && `owner ${owner}`,
+      stage && `stage ${stage}`,
+      amount && `amount ${amount}`,
+      subject && subject,
+      direct && direct,
+    ]
+      .filter(Boolean)
+      .join("; ");
+    const content = synthesized || direct;
     const timestamp = pick(row, map, ["timestamp", "created_at", "updated_at", "date"]);
-    return record(`csv-${idx}-${Date.now()}`, sourceType, sourceId, content, timestamp);
+    const raw = record(`csv-${idx}-${Date.now()}`, sourceType, sourceId, content, timestamp);
+    if (!raw.content.trim()) {
+      warnings.push(`Row ${idx + 1}: empty synthesized content`);
+    }
+    return raw;
   });
-  return { records: records.filter((r) => r.content), adapterName: "generic-csv" };
+  const records = materialized.filter((r) => r.content.trim());
+  return {
+    records,
+    adapterName: "generic-csv",
+    diagnostics: {
+      totalRows: rows.length,
+      parsedRows: records.length,
+      droppedRows: rows.length - records.length,
+      inferredSourceCounts,
+      warnings,
+    },
+  };
 }
 
 function adaptSalesforceCsv(text: string): AdapterResult {
@@ -110,7 +155,18 @@ function adaptSalesforceCsv(text: string): AdapterResult {
     const content = `Salesforce export: account ${account}; owner ${owner}; stage ${stage}; amount ${amount}.`;
     return record(`sf-${idx}-${Date.now()}`, "crm", sourceId, content);
   });
-  return { records: records.filter((r) => r.content), adapterName: "salesforce-csv" };
+  const filtered = records.filter((r) => r.content.trim());
+  return {
+    records: filtered,
+    adapterName: "salesforce-csv",
+    diagnostics: {
+      totalRows: rows.length,
+      parsedRows: filtered.length,
+      droppedRows: rows.length - filtered.length,
+      inferredSourceCounts: { crm: filtered.length },
+      warnings: [],
+    },
+  };
 }
 
 function adaptHubSpotCsv(text: string): AdapterResult {
@@ -125,7 +181,18 @@ function adaptHubSpotCsv(text: string): AdapterResult {
     const content = `HubSpot export: company ${company}; owner ${owner}; lifecycle/stage ${stage}; amount ${amount}.`;
     return record(`hs-${idx}-${Date.now()}`, "crm", sourceId, content);
   });
-  return { records: records.filter((r) => r.content), adapterName: "hubspot-csv" };
+  const filtered = records.filter((r) => r.content.trim());
+  return {
+    records: filtered,
+    adapterName: "hubspot-csv",
+    diagnostics: {
+      totalRows: rows.length,
+      parsedRows: filtered.length,
+      droppedRows: rows.length - filtered.length,
+      inferredSourceCounts: { crm: filtered.length },
+      warnings: [],
+    },
+  };
 }
 
 function adaptZendeskCsv(text: string): AdapterResult {
@@ -140,7 +207,18 @@ function adaptZendeskCsv(text: string): AdapterResult {
     const content = `Zendesk ticket ${ticketId}: subject ${subject}; requester ${requester}; status ${status}; priority ${priority}.`;
     return record(`zd-${idx}-${Date.now()}`, "ticket", ticketId, content);
   });
-  return { records: records.filter((r) => r.content), adapterName: "zendesk-csv" };
+  const filtered = records.filter((r) => r.content.trim());
+  return {
+    records: filtered,
+    adapterName: "zendesk-csv",
+    diagnostics: {
+      totalRows: rows.length,
+      parsedRows: filtered.length,
+      droppedRows: rows.length - filtered.length,
+      inferredSourceCounts: { ticket: filtered.length },
+      warnings: [],
+    },
+  };
 }
 
 function adaptJiraCsv(text: string): AdapterResult {
@@ -155,7 +233,18 @@ function adaptJiraCsv(text: string): AdapterResult {
     const content = `Jira issue ${key}: ${summary}; status ${status}; priority ${priority}; assignee ${assignee}.`;
     return record(`jira-${idx}-${Date.now()}`, "ticket", key, content);
   });
-  return { records: records.filter((r) => r.content), adapterName: "jira-csv" };
+  const filtered = records.filter((r) => r.content.trim());
+  return {
+    records: filtered,
+    adapterName: "jira-csv",
+    diagnostics: {
+      totalRows: rows.length,
+      parsedRows: filtered.length,
+      droppedRows: rows.length - filtered.length,
+      inferredSourceCounts: { ticket: filtered.length },
+      warnings: [],
+    },
+  };
 }
 
 function looksLikeSlackExport(json: unknown): json is { messages: Array<{ text?: string; ts?: string; user?: string }> } {
@@ -166,11 +255,13 @@ function looksLikeSlackExport(json: unknown): json is { messages: Array<{ text?:
 
 function adaptJson(input: unknown): AdapterResult {
   if (Array.isArray(input)) {
-    const records = input
+    const inferredSourceCounts: Partial<Record<SourceType, number>> = {};
+    const materialized = input
       .map((item, idx) => {
         if (!item || typeof item !== "object") return null;
         const row = item as Record<string, unknown>;
         const sourceType = normalizeSourceType(String(row.sourceType ?? row.source_type ?? row.system ?? "business"));
+        inferredSourceCounts[sourceType] = (inferredSourceCounts[sourceType] ?? 0) + 1;
         const sourceId = String(row.sourceId ?? row.source_id ?? row.id ?? `JSON-${idx + 1}`);
         const content =
           String(
@@ -178,13 +269,25 @@ function adaptJson(input: unknown): AdapterResult {
               row.text ??
               row.body ??
               row.description ??
+              row.notes ??
               `Record ${sourceId} from ${sourceType} export.`
           );
         const timestamp = String(row.timestamp ?? row.created_at ?? row.updated_at ?? new Date().toISOString());
         return record(`json-${idx}-${Date.now()}`, sourceType, sourceId, content, timestamp);
       })
-      .filter((r): r is RawRecord => Boolean(r && r.content.trim()));
-    return { records, adapterName: "json-array" };
+      .filter((r): r is RawRecord => Boolean(r));
+    const records = materialized.filter((r) => r.content.trim());
+    return {
+      records,
+      adapterName: "json-array",
+      diagnostics: {
+        totalRows: input.length,
+        parsedRows: records.length,
+        droppedRows: input.length - records.length,
+        inferredSourceCounts,
+        warnings: [],
+      },
+    };
   }
 
   if (looksLikeSlackExport(input)) {
@@ -197,7 +300,18 @@ function adaptJson(input: unknown): AdapterResult {
         message.ts ? new Date(Number(message.ts.split(".")[0]) * 1000).toISOString() : undefined
       )
     );
-    return { records: records.filter((r) => r.content), adapterName: "slack-json" };
+    const filtered = records.filter((r) => r.content.trim());
+    return {
+      records: filtered,
+      adapterName: "slack-json",
+      diagnostics: {
+        totalRows: input.messages.length,
+        parsedRows: filtered.length,
+        droppedRows: input.messages.length - filtered.length,
+        inferredSourceCounts: { collab: filtered.length },
+        warnings: [],
+      },
+    };
   }
 
   if (input && typeof input === "object") {
@@ -208,15 +322,32 @@ function adaptJson(input: unknown): AdapterResult {
     return {
       records: [record(`obj-${Date.now()}`, sourceType, sourceId, content)],
       adapterName: "json-object",
+      diagnostics: {
+        totalRows: 1,
+        parsedRows: 1,
+        droppedRows: 0,
+        inferredSourceCounts: { [sourceType]: 1 },
+        warnings: [],
+      },
     };
   }
 
-  return { records: [], adapterName: "json-unknown" };
+  return {
+    records: [],
+    adapterName: "json-unknown",
+    diagnostics: {
+      totalRows: 0,
+      parsedRows: 0,
+      droppedRows: 0,
+      inferredSourceCounts: {},
+      warnings: ["JSON payload did not match known object/array structures."],
+    },
+  };
 }
 
 function detectCsvAdapter(headers: string[]): "salesforce" | "hubspot" | "zendesk" | "jira" | "generic" {
   const joined = headers.join("|");
-  if (joined.includes("account owner") || joined.includes("opportunity id")) return "salesforce";
+  if ((joined.includes("account owner") || joined.includes("opportunity id")) && (joined.includes("account name") || joined.includes("name"))) return "salesforce";
   if (joined.includes("deal stage") || joined.includes("hubspot_owner_id")) return "hubspot";
   if (joined.includes("ticket id") && joined.includes("requester")) return "zendesk";
   if (joined.includes("issue key") || joined.includes("assignee")) return "jira";
@@ -225,14 +356,35 @@ function detectCsvAdapter(headers: string[]): "salesforce" | "hubspot" | "zendes
 
 export function parseDatasetPayload(payload: string, fileName?: string): AdapterResult {
   const trimmed = payload.trim();
-  if (!trimmed) return { records: [], adapterName: "empty" };
+  if (!trimmed)
+    return {
+      records: [],
+      adapterName: "empty",
+      diagnostics: {
+        totalRows: 0,
+        parsedRows: 0,
+        droppedRows: 0,
+        inferredSourceCounts: {},
+        warnings: ["Empty payload."],
+      },
+    };
 
   if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
     try {
-      const parsed = JSON.parse(trimmed);
+      const parsed = JSON.parse(stripJsonComments(trimmed));
       return adaptJson(parsed);
     } catch {
-      return { records: [], adapterName: "json-parse-failed" };
+      return {
+        records: [],
+        adapterName: "json-parse-failed",
+        diagnostics: {
+          totalRows: 0,
+          parsedRows: 0,
+          droppedRows: 0,
+          inferredSourceCounts: {},
+          warnings: ["JSON parse failed even after cleanup."],
+        },
+      };
     }
   }
 
@@ -245,12 +397,47 @@ export function parseDatasetPayload(payload: string, fileName?: string): Adapter
   const generic = adaptGenericCsv(trimmed);
 
   if (generic.records.length === 0 && fileName?.toLowerCase().endsWith(".txt")) {
+    const detectLineSourceType = (line: string): SourceType => {
+      const lc = line.toLowerCase();
+      if (lc.includes("account") || lc.includes("crm")) return "crm";
+      if (lc.includes("joined as") || lc.includes("hr")) return "hr";
+      if (lc.includes("ticket") || lc.includes("incident")) return "ticket";
+      if (lc.includes("policy") || lc.includes("sla")) return "policy";
+      if (lc.includes("service") || lc.includes("depends on") || lc.includes("slo")) return "it";
+      if (lc.includes("#") || lc.includes("workspace") || lc.includes("slack")) return "collab";
+      return "business";
+    };
     const lines = trimmed.split(/\r?\n/).filter(Boolean);
+    const inferredSourceCounts: Partial<Record<SourceType, number>> = {};
     const records = lines.map((line, idx) =>
-      record(`txt-${idx}-${Date.now()}`, "business", `TXT-${idx + 1}`, line, new Date().toISOString())
+      {
+        const sourceType = detectLineSourceType(line);
+        inferredSourceCounts[sourceType] = (inferredSourceCounts[sourceType] ?? 0) + 1;
+        return record(`txt-${idx}-${Date.now()}`, sourceType, `TXT-${idx + 1}`, line, new Date().toISOString());
+      }
     );
-    return { records, adapterName: "plain-text-lines" };
+    const filtered = records.filter((r) => r.content.trim().length > 0);
+    return {
+      records: filtered,
+      adapterName: "plain-text-lines",
+      diagnostics: {
+        totalRows: lines.length,
+        parsedRows: filtered.length,
+        droppedRows: lines.length - filtered.length,
+        inferredSourceCounts,
+        warnings: [],
+      },
+    };
   }
 
-  return generic;
+  return {
+    ...generic,
+    diagnostics: generic.diagnostics ?? {
+      totalRows: generic.records.length,
+      parsedRows: generic.records.length,
+      droppedRows: 0,
+      inferredSourceCounts: {},
+      warnings: [],
+    },
+  };
 }
