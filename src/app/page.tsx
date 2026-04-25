@@ -82,6 +82,7 @@ export default function Home() {
       warnings: string[];
     };
   } | null>(null);
+  const [demoIngestLoading, setDemoIngestLoading] = useState(false);
   const [showIntro, setShowIntro] = useState(() => {
     if (typeof window === "undefined") return true;
     try {
@@ -318,6 +319,38 @@ export default function Home() {
     }
   };
 
+  const ingestLocalDatasetDemo = async () => {
+    setDemoIngestLoading(true);
+    setIngestMessage("Preparing records from local dataset folder...");
+    try {
+      const res = await fetch("/api/import/local-dataset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          maxFiles: 40,
+          maxRecordsPerFile: 4,
+          maxRecordsTotal: 120,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok || !Array.isArray(json.records)) {
+        setIngestMessage(`Local dataset ingest failed: ${json.error ?? "unknown error"}`);
+        return;
+      }
+
+      let processed = 0;
+      for (const record of json.records as RawRecord[]) {
+        await processIncomingRecord(record);
+        processed += 1;
+      }
+      setIngestMessage(`Demo ingest complete: processed ${processed} records from Dataset From Qontext/Dataset.`);
+    } catch {
+      setIngestMessage("Local dataset ingest request failed.");
+    } finally {
+      setDemoIngestLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#090d17] text-slate-100">
       {showIntro ? (
@@ -521,6 +554,13 @@ export default function Home() {
                 className="rounded-md bg-cyan-500 px-3 py-2 text-left text-xs font-medium text-slate-950 hover:bg-cyan-400"
               >
                 Process next incoming update
+              </button>
+              <button
+                onClick={() => void ingestLocalDatasetDemo()}
+                disabled={demoIngestLoading}
+                className="rounded-md bg-violet-500 px-3 py-2 text-left text-xs font-medium text-violet-950 hover:bg-violet-400 disabled:opacity-60"
+              >
+                {demoIngestLoading ? "Ingesting local dataset..." : "Demo Ingest Local Dataset Folder"}
               </button>
             </div>
           </div>

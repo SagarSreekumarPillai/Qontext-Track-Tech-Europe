@@ -119,6 +119,11 @@ Use this sequence to verify end-to-end ingestion and live state updates:
    - **Right**: provenance/graph/review queue/update history reflect new extracted facts and decisions
 5. Repeat with a different source category (e.g. HR or CRM file) and confirm metrics/relationships change again.
 
+Fastest path for judges:
+- Click **Demo Ingest Local Dataset Folder** in the **Operations** section.
+- The app automatically samples records from `Dataset From Qontext/Dataset` and processes them end-to-end.
+- Watch incoming records, memory files, graph, provenance, and review queue update live.
+
 What this demonstrates:
 - records are parsed from external dataset files at runtime
 - extraction and routing occur on the ingested content

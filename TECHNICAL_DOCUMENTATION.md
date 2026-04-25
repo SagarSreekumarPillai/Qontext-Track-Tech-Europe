@@ -25,6 +25,7 @@ LoomOS converts fragmented enterprise records into structured memory with:
 
 ### Backend API Layer
 - `POST /api/import/preview`: validates and previews import compatibility.
+- `POST /api/import/local-dataset`: samples and normalizes local dataset files from `Dataset From Qontext/Dataset` for one-click demo ingestion.
 - `POST /api/extract`: extraction + routing + enrichment.
 - `POST /api/ingest`: persistence of raw records and update actions.
 
@@ -64,6 +65,7 @@ This is a **delivery fallback**, not a product limitation. The system still supp
 - JSON/CSV payload ingestion
 - adapter detection for common enterprise exports
 - pre-ingest compatibility preview and data quality reporting
+- one-click local dataset ingestion through `Demo Ingest Local Dataset Folder` UI action
 
 Judges can therefore evaluate the same end-to-end behavior (normalization, extraction, provenance, routing, review governance) using the local dataset path with deterministic results.
 
