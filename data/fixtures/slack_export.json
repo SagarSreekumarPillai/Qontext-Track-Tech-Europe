@@ -1,0 +1,14 @@
+{
+  "messages": [
+    {
+      "user": "U001",
+      "text": "#q4-launch blocker is legal sign-off",
+      "ts": "1714046400.000100"
+    },
+    {
+      "user": "U002",
+      "text": "Growth team owns final email QA for launch",
+      "ts": "1714046700.000200"
+    }
+  ]
+}

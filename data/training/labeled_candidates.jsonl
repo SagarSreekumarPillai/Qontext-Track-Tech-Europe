@@ -1,0 +1,152 @@
+{"sourceType":"business","content":"pipeline coverage 3.4x target","fact":"pipeline_metric","value":"3.4x","confidence":0.929,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"policy","content":"Possibly escalate quickly","fact":"process_step","value":"escalation_required","confidence":0.506,"ambiguityReason":"possibly","shouldAutoApply":0}
+{"sourceType":"email","content":"Maybe Sarah still owns Acme during transition.","fact":"account_owner","value":"Sarah","confidence":0.649,"ambiguityReason":"maybe","shouldAutoApply":0}
+{"sourceType":"it","content":"payments-api depends on redis-cache-eu","fact":"dependency","value":"redis-cache-eu","confidence":0.886,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"P1 incident, owner Platform Team","fact":"priority","value":"P1","confidence":0.95,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"Q2 forecast updated: EMEA pipeline coverage 3.1x target, expected close rate 25%, risk concentrated in sso segment.","fact":"pipeline_metric","value":"3.1x","confidence":0.9,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"P1 incident on compliance subsystem. Owner: Growth Team. Mitigation in progress.","fact":"priority","value":"P1","confidence":0.94,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"crm","content":"Acme account owner is David Park.","fact":"account_owner","value":"David Park","confidence":0.962,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"it","content":"payments-api depends on redis-cache-eu","fact":"dependency","value":"redis-cache-eu","confidence":0.934,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"email","content":"Maybe Sarah still owns Acme during transition.","fact":"account_owner","value":"Sarah","confidence":0.65,"ambiguityReason":"maybe","shouldAutoApply":0}
+{"sourceType":"business","content":"pipeline coverage 3.4x target","fact":"pipeline_metric","value":"3.4x","confidence":0.841,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"crm","content":"Account reassigned from Sarah to David during transition.","fact":"account_owner","value":"David","confidence":0.676,"ambiguityReason":"transition","shouldAutoApply":0}
+{"sourceType":"policy","content":"Possibly escalate quickly","fact":"process_step","value":"escalation_required","confidence":0.58,"ambiguityReason":"possibly","shouldAutoApply":0}
+{"sourceType":"hr","content":"Priya joined as Security Engineer on 2026-04-10.","fact":"role","value":"Security Engineer","confidence":0.896,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"crm","content":"Account reassigned from Sarah to David during transition.","fact":"account_owner","value":"David","confidence":0.775,"ambiguityReason":"transition","shouldAutoApply":0}
+{"sourceType":"collab","content":"Blocker is legal sign-off","fact":"risk_note","value":"legal sign-off","confidence":0.899,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"crm","content":"Acme account owner is David Park.","fact":"account_owner","value":"David Park","confidence":0.99,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"crm","content":"Account Acme Manufacturing was reassigned from Sarah Lee to Elena Rossi effective May 1. Renewal amount is €180,000 ARR.","fact":"account_owner","value":"Elena Rossi","confidence":0.95,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"risk concentrated in DACH","fact":"risk_note","value":"DACH","confidence":0.779,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"it","content":"payments-api depends on redis-cache-eu","fact":"dependency","value":"redis-cache-eu","confidence":0.972,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"collab","content":"#q2-launch blocker is legal sign-off for sla.","fact":"risk_note","value":"legal sign-off","confidence":0.83,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"crm","content":"Account Orion Logistics was reassigned from Priya Nair to Sarah Lee effective May 1. Renewal amount is €190,000 ARR.","fact":"account_owner","value":"Sarah Lee","confidence":0.95,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"policy","content":"Violations must be escalated within 24 hours","fact":"sla_hours","value":"24","confidence":0.99,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"policy","content":"Violations must be escalated within 24 hours","fact":"sla_hours","value":"24","confidence":0.942,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"P1 incident on sso subsystem. Owner: Growth Team. Mitigation in progress.","fact":"priority","value":"P1","confidence":0.94,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"it","content":"payments-api SLO target may be adjusted","fact":"slo_target","value":"adjusting","confidence":0.607,"ambiguityReason":"may","shouldAutoApply":0}
+{"sourceType":"collab","content":"#q1-launch blocker is legal sign-off for sso.","fact":"risk_note","value":"legal sign-off","confidence":0.83,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"policy","content":"Possibly escalate quickly","fact":"process_step","value":"escalation_required","confidence":0.556,"ambiguityReason":"possibly","shouldAutoApply":0}
+{"sourceType":"email","content":"Maybe Sarah Lee still owns Orion Logistics during transition while Noah Klein shadows.","fact":"account_owner","value":"Sarah Lee","confidence":0.61,"ambiguityReason":"tentative language","shouldAutoApply":0}
+{"sourceType":"it","content":"payments-api SLO target may be adjusted","fact":"slo_target","value":"adjusting","confidence":0.677,"ambiguityReason":"may","shouldAutoApply":0}
+{"sourceType":"policy","content":"Possibly escalate quickly","fact":"process_step","value":"escalation_required","confidence":0.565,"ambiguityReason":"possibly","shouldAutoApply":0}
+{"sourceType":"it","content":"Service compliance-api depends on postgres-prod-1 and redis-cache-eu. Current SLO target is 99.95%.","fact":"dependency","value":"postgres-prod-1","confidence":0.92,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"risk concentrated in DACH","fact":"risk_note","value":"DACH","confidence":0.832,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"crm","content":"Acme account owner is David Park.","fact":"account_owner","value":"David Park","confidence":0.99,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"risk concentrated in DACH","fact":"risk_note","value":"DACH","confidence":0.808,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"business","content":"pipeline coverage 3.4x target","fact":"pipeline_metric","value":"3.4x","confidence":0.912,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"collab","content":"Blocker is legal sign-off","fact":"risk_note","value":"legal sign-off","confidence":0.875,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"ticket","content":"Likely root cause in auth layer","fact":"status","value":"root cause likely auth","confidence":0.587,"ambiguityReason":"likely","shouldAutoApply":0}
+{"sourceType":"email","content":"Maybe Sarah still owns Acme during transition.","fact":"account_owner","value":"Sarah","confidence":0.585,"ambiguityReason":"maybe","shouldAutoApply":0}
+{"sourceType":"email","content":"Maybe Elena Rossi still owns BluePeak Energy during transition while Sarah Lee shadows.","fact":"account_owner","value":"Elena Rossi","confidence":0.61,"ambiguityReason":"tentative language","shouldAutoApply":0}
+{"sourceType":"business","content":"Q2 forecast updated: EMEA pipeline coverage 3.4x target, expected close rate 28%, risk concentrated in sso segment.","fact":"pipeline_metric","value":"3.4x","confidence":0.9,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"Q2 forecast updated: EMEA pipeline coverage 3.0x target, expected close rate 24%, risk concentrated in sso segment.","fact":"pipeline_metric","value":"3.0x","confidence":0.9,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"P1 incident, owner Platform Team","fact":"priority","value":"P1","confidence":0.922,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"policy","content":"Possibly escalate quickly","fact":"process_step","value":"escalation_required","confidence":0.537,"ambiguityReason":"possibly","shouldAutoApply":0}
+{"sourceType":"email","content":"Maybe Sarah Lee still owns Orion Logistics during transition while Elena Rossi shadows.","fact":"account_owner","value":"Sarah Lee","confidence":0.61,"ambiguityReason":"tentative language","shouldAutoApply":0}
+{"sourceType":"hr","content":"Priya joined as Security Engineer on 2026-04-10.","fact":"role","value":"Security Engineer","confidence":0.961,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"P1 incident on compliance subsystem. Owner: Infra Team. Mitigation in progress.","fact":"priority","value":"P1","confidence":0.94,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"crm","content":"Account reassigned from Sarah to David during transition.","fact":"account_owner","value":"David","confidence":0.681,"ambiguityReason":"transition","shouldAutoApply":0}
+{"sourceType":"business","content":"risk concentrated in DACH","fact":"risk_note","value":"DACH","confidence":0.828,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"it","content":"payments-api SLO target may be adjusted","fact":"slo_target","value":"adjusting","confidence":0.629,"ambiguityReason":"may","shouldAutoApply":0}
+{"sourceType":"collab","content":"#q2-launch blocker is legal sign-off for sso.","fact":"risk_note","value":"legal sign-off","confidence":0.83,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"ticket","content":"P1 incident on sso subsystem. Owner: Security Team. Mitigation in progress.","fact":"priority","value":"P1","confidence":0.94,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"collab","content":"Blocker is legal sign-off","fact":"risk_note","value":"legal sign-off","confidence":0.842,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"crm","content":"Account BluePeak Energy was reassigned from Elena Rossi to Sarah Lee effective May 1. Renewal amount is €250,000 ARR.","fact":"account_owner","value":"Sarah Lee","confidence":0.95,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"hr","content":"Priya joined as Security Engineer on 2026-04-10.","fact":"role","value":"Security Engineer","confidence":0.957,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"policy","content":"Possibly escalate quickly","fact":"process_step","value":"escalation_required","confidence":0.545,"ambiguityReason":"possibly","shouldAutoApply":0}
+{"sourceType":"it","content":"payments-api depends on redis-cache-eu","fact":"dependency","value":"redis-cache-eu","confidence":0.926,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"crm","content":"Account Orion Logistics was reassigned from Noah Klein to Sarah Lee effective May 1. Renewal amount is €240,000 ARR.","fact":"account_owner","value":"Sarah Lee","confidence":0.95,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"Q2 forecast updated: EMEA pipeline coverage 3.5x target, expected close rate 29%, risk concentrated in sla segment.","fact":"pipeline_metric","value":"3.5x","confidence":0.9,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"risk concentrated in DACH","fact":"risk_note","value":"DACH","confidence":0.853,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"ticket","content":"P1 incident, owner Platform Team","fact":"priority","value":"P1","confidence":0.99,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"collab","content":"#q1-launch blocker is legal sign-off for sso.","fact":"risk_note","value":"legal sign-off","confidence":0.83,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"hr","content":"Priya joined as Security Engineer on 2026-04-10.","fact":"role","value":"Security Engineer","confidence":0.923,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"Q2 forecast updated: EMEA pipeline coverage 3.3x target, expected close rate 27%, risk concentrated in compliance segment.","fact":"pipeline_metric","value":"3.3x","confidence":0.9,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"hr","content":"Priya joined as Security Engineer on 2026-04-10.","fact":"role","value":"Security Engineer","confidence":0.898,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"Likely root cause in auth layer","fact":"status","value":"root cause likely auth","confidence":0.598,"ambiguityReason":"likely","shouldAutoApply":0}
+{"sourceType":"collab","content":"Blocker is legal sign-off","fact":"risk_note","value":"legal sign-off","confidence":0.843,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"business","content":"risk concentrated in DACH","fact":"risk_note","value":"DACH","confidence":0.803,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"collab","content":"Blocker is legal sign-off","fact":"risk_note","value":"legal sign-off","confidence":0.87,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"it","content":"payments-api depends on redis-cache-eu","fact":"dependency","value":"redis-cache-eu","confidence":0.964,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"collab","content":"Blocker is legal sign-off","fact":"risk_note","value":"legal sign-off","confidence":0.837,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"it","content":"Service sla-api depends on postgres-prod-3 and redis-cache-eu. Current SLO target is 99.95%.","fact":"dependency","value":"postgres-prod-3","confidence":0.92,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"policy","content":"Violations must be escalated within 24 hours","fact":"sla_hours","value":"24","confidence":0.969,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"email","content":"Maybe Sarah still owns Acme during transition.","fact":"account_owner","value":"Sarah","confidence":0.669,"ambiguityReason":"maybe","shouldAutoApply":0}
+{"sourceType":"crm","content":"Acme account owner is David Park.","fact":"account_owner","value":"David Park","confidence":0.955,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"collab","content":"#q4-launch blocker is legal sign-off for compliance.","fact":"risk_note","value":"legal sign-off","confidence":0.83,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"crm","content":"Account reassigned from Sarah to David during transition.","fact":"account_owner","value":"David","confidence":0.687,"ambiguityReason":"transition","shouldAutoApply":0}
+{"sourceType":"ticket","content":"Likely root cause in auth layer","fact":"status","value":"root cause likely auth","confidence":0.528,"ambiguityReason":"likely","shouldAutoApply":0}
+{"sourceType":"ticket","content":"P1 incident, owner Platform Team","fact":"priority","value":"P1","confidence":0.938,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"P1 incident, owner Platform Team","fact":"priority","value":"P1","confidence":0.965,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"collab","content":"#q3-launch blocker is legal sign-off for compliance.","fact":"risk_note","value":"legal sign-off","confidence":0.83,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"policy","content":"Violations must be escalated within 24 hours","fact":"sla_hours","value":"24","confidence":0.983,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"P1 incident, owner Platform Team","fact":"priority","value":"P1","confidence":0.988,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"crm","content":"Account Orion Logistics was reassigned from Sarah Lee to Noah Klein effective May 1. Renewal amount is €200,000 ARR.","fact":"account_owner","value":"Noah Klein","confidence":0.95,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"pipeline coverage 3.4x target","fact":"pipeline_metric","value":"3.4x","confidence":0.945,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"P1 incident on sso subsystem. Owner: Infra Team. Mitigation in progress.","fact":"priority","value":"P1","confidence":0.94,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"crm","content":"Account Orion Logistics was reassigned from Sarah Lee to Elena Rossi effective May 1. Renewal amount is €210,000 ARR.","fact":"account_owner","value":"Elena Rossi","confidence":0.95,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"it","content":"payments-api depends on redis-cache-eu","fact":"dependency","value":"redis-cache-eu","confidence":0.929,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"risk concentrated in DACH","fact":"risk_note","value":"DACH","confidence":0.824,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"email","content":"Maybe David Park still owns Nova Retail during transition while Elena Rossi shadows.","fact":"account_owner","value":"David Park","confidence":0.61,"ambiguityReason":"tentative language","shouldAutoApply":0}
+{"sourceType":"crm","content":"Account reassigned from Sarah to David during transition.","fact":"account_owner","value":"David","confidence":0.765,"ambiguityReason":"transition","shouldAutoApply":0}
+{"sourceType":"policy","content":"Violations must be escalated within 24 hours","fact":"sla_hours","value":"24","confidence":0.951,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"collab","content":"#q3-launch blocker is legal sign-off for incident.","fact":"risk_note","value":"legal sign-off","confidence":0.83,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"email","content":"Maybe Sarah Lee still owns Acme Manufacturing during transition while Elena Rossi shadows.","fact":"account_owner","value":"Sarah Lee","confidence":0.61,"ambiguityReason":"tentative language","shouldAutoApply":0}
+{"sourceType":"ticket","content":"Likely root cause in auth layer","fact":"status","value":"root cause likely auth","confidence":0.555,"ambiguityReason":"likely","shouldAutoApply":0}
+{"sourceType":"crm","content":"Acme account owner is David Park.","fact":"account_owner","value":"David Park","confidence":0.99,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"email","content":"Maybe Sarah still owns Acme during transition.","fact":"account_owner","value":"Sarah","confidence":0.569,"ambiguityReason":"maybe","shouldAutoApply":0}
+{"sourceType":"it","content":"Service sso-api depends on postgres-prod-2 and redis-cache-eu. Current SLO target is 99.95%.","fact":"dependency","value":"postgres-prod-2","confidence":0.92,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"crm","content":"Account BluePeak Energy was reassigned from Sarah Lee to David Park effective May 1. Renewal amount is €220,000 ARR.","fact":"account_owner","value":"David Park","confidence":0.95,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"P1 incident on sla subsystem. Owner: Security Team. Mitigation in progress.","fact":"priority","value":"P1","confidence":0.94,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"Q2 forecast updated: EMEA pipeline coverage 3.6x target, expected close rate 30%, risk concentrated in incident segment.","fact":"pipeline_metric","value":"3.6x","confidence":0.9,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"pipeline coverage 3.4x target","fact":"pipeline_metric","value":"3.4x","confidence":0.847,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"Likely root cause in auth layer","fact":"status","value":"root cause likely auth","confidence":0.59,"ambiguityReason":"likely","shouldAutoApply":0}
+{"sourceType":"it","content":"Service incident-api depends on postgres-prod-2 and redis-cache-eu. Current SLO target is 99.95%.","fact":"dependency","value":"postgres-prod-2","confidence":0.92,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"email","content":"Maybe Sarah still owns Acme during transition.","fact":"account_owner","value":"Sarah","confidence":0.564,"ambiguityReason":"maybe","shouldAutoApply":0}
+{"sourceType":"business","content":"Q2 forecast updated: EMEA pipeline coverage 3.2x target, expected close rate 26%, risk concentrated in compliance segment.","fact":"pipeline_metric","value":"3.2x","confidence":0.9,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"pipeline coverage 3.4x target","fact":"pipeline_metric","value":"3.4x","confidence":0.884,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"Likely root cause in auth layer","fact":"status","value":"root cause likely auth","confidence":0.556,"ambiguityReason":"likely","shouldAutoApply":0}
+{"sourceType":"policy","content":"Possibly escalate quickly","fact":"process_step","value":"escalation_required","confidence":0.561,"ambiguityReason":"possibly","shouldAutoApply":0}
+{"sourceType":"it","content":"payments-api SLO target may be adjusted","fact":"slo_target","value":"adjusting","confidence":0.672,"ambiguityReason":"may","shouldAutoApply":0}
+{"sourceType":"business","content":"risk concentrated in DACH","fact":"risk_note","value":"DACH","confidence":0.86,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"it","content":"Service sso-api depends on postgres-prod-1 and redis-cache-eu. Current SLO target is 99.95%.","fact":"dependency","value":"postgres-prod-1","confidence":0.92,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"email","content":"Maybe Sarah Lee still owns BluePeak Energy during transition while David Park shadows.","fact":"account_owner","value":"Sarah Lee","confidence":0.61,"ambiguityReason":"tentative language","shouldAutoApply":0}
+{"sourceType":"it","content":"payments-api depends on redis-cache-eu","fact":"dependency","value":"redis-cache-eu","confidence":0.882,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"hr","content":"Priya joined as Security Engineer on 2026-04-10.","fact":"role","value":"Security Engineer","confidence":0.936,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"crm","content":"Acme account owner is David Park.","fact":"account_owner","value":"David Park","confidence":0.937,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"hr","content":"Priya joined as Security Engineer on 2026-04-10.","fact":"role","value":"Security Engineer","confidence":0.959,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"Q2 forecast updated: EMEA pipeline coverage 3.7x target, expected close rate 31%, risk concentrated in incident segment.","fact":"pipeline_metric","value":"3.7x","confidence":0.9,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"crm","content":"Account Nova Retail was reassigned from David Park to Elena Rossi effective May 1. Renewal amount is €230,000 ARR.","fact":"account_owner","value":"Elena Rossi","confidence":0.95,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"collab","content":"Blocker is legal sign-off","fact":"risk_note","value":"legal sign-off","confidence":0.891,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"policy","content":"Possibly escalate quickly","fact":"process_step","value":"escalation_required","confidence":0.532,"ambiguityReason":"possibly","shouldAutoApply":0}
+{"sourceType":"it","content":"payments-api SLO target may be adjusted","fact":"slo_target","value":"adjusting","confidence":0.59,"ambiguityReason":"may","shouldAutoApply":0}
+{"sourceType":"email","content":"Maybe Sarah still owns Acme during transition.","fact":"account_owner","value":"Sarah","confidence":0.659,"ambiguityReason":"maybe","shouldAutoApply":0}
+{"sourceType":"crm","content":"Acme account owner is David Park.","fact":"account_owner","value":"David Park","confidence":0.908,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"P1 incident, owner Platform Team","fact":"priority","value":"P1","confidence":0.99,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"business","content":"pipeline coverage 3.4x target","fact":"pipeline_metric","value":"3.4x","confidence":0.928,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"it","content":"Service compliance-api depends on postgres-prod-3 and redis-cache-eu. Current SLO target is 99.95%.","fact":"dependency","value":"postgres-prod-3","confidence":0.92,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"crm","content":"Account reassigned from Sarah to David during transition.","fact":"account_owner","value":"David","confidence":0.766,"ambiguityReason":"transition","shouldAutoApply":0}
+{"sourceType":"policy","content":"Violations must be escalated within 24 hours","fact":"sla_hours","value":"24","confidence":0.938,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"it","content":"payments-api SLO target may be adjusted","fact":"slo_target","value":"adjusting","confidence":0.609,"ambiguityReason":"may","shouldAutoApply":0}
+{"sourceType":"it","content":"Service sso-api depends on postgres-prod-2 and redis-cache-eu. Current SLO target is 99.95%.","fact":"dependency","value":"postgres-prod-2","confidence":0.92,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"email","content":"Maybe Sarah still owns Acme during transition.","fact":"account_owner","value":"Sarah","confidence":0.671,"ambiguityReason":"maybe","shouldAutoApply":0}
+{"sourceType":"business","content":"pipeline coverage 3.4x target","fact":"pipeline_metric","value":"3.4x","confidence":0.945,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"it","content":"payments-api SLO target may be adjusted","fact":"slo_target","value":"adjusting","confidence":0.635,"ambiguityReason":"may","shouldAutoApply":0}
+{"sourceType":"crm","content":"Account reassigned from Sarah to David during transition.","fact":"account_owner","value":"David","confidence":0.749,"ambiguityReason":"transition","shouldAutoApply":0}
+{"sourceType":"ticket","content":"Likely root cause in auth layer","fact":"status","value":"root cause likely auth","confidence":0.524,"ambiguityReason":"likely","shouldAutoApply":0}
+{"sourceType":"policy","content":"Violations must be escalated within 24 hours","fact":"sla_hours","value":"24","confidence":0.916,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"crm","content":"Acme account owner is David Park.","fact":"account_owner","value":"David Park","confidence":0.921,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"hr","content":"Priya joined as Security Engineer on 2026-04-10.","fact":"role","value":"Security Engineer","confidence":0.977,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"it","content":"payments-api depends on redis-cache-eu","fact":"dependency","value":"redis-cache-eu","confidence":0.972,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"P1 incident, owner Platform Team","fact":"priority","value":"P1","confidence":0.974,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"it","content":"payments-api SLO target may be adjusted","fact":"slo_target","value":"adjusting","confidence":0.65,"ambiguityReason":"may","shouldAutoApply":0}
+{"sourceType":"crm","content":"Account reassigned from Sarah to David during transition.","fact":"account_owner","value":"David","confidence":0.739,"ambiguityReason":"transition","shouldAutoApply":0}
+{"sourceType":"collab","content":"#q4-launch blocker is legal sign-off for incident.","fact":"risk_note","value":"legal sign-off","confidence":0.83,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"ticket","content":"P1 incident on incident subsystem. Owner: Growth Team. Mitigation in progress.","fact":"priority","value":"P1","confidence":0.94,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"it","content":"Service incident-api depends on postgres-prod-1 and redis-cache-eu. Current SLO target is 99.95%.","fact":"dependency","value":"postgres-prod-1","confidence":0.92,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"ticket","content":"P1 incident on incident subsystem. Owner: Platform Team. Mitigation in progress.","fact":"priority","value":"P1","confidence":0.94,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"email","content":"Maybe Noah Klein still owns Orion Logistics during transition while Sarah Lee shadows.","fact":"account_owner","value":"Noah Klein","confidence":0.61,"ambiguityReason":"tentative language","shouldAutoApply":0}
+{"sourceType":"policy","content":"Violations must be escalated within 24 hours","fact":"sla_hours","value":"24","confidence":0.951,"ambiguityReason":"","shouldAutoApply":1}
+{"sourceType":"collab","content":"Blocker is legal sign-off","fact":"risk_note","value":"legal sign-off","confidence":0.929,"ambiguityReason":"","shouldAutoApply":0}
+{"sourceType":"ticket","content":"Likely root cause in auth layer","fact":"status","value":"root cause likely auth","confidence":0.565,"ambiguityReason":"likely","shouldAutoApply":0}
+{"sourceType":"email","content":"Maybe Priya Nair still owns Orion Logistics during transition while Sarah Lee shadows.","fact":"account_owner","value":"Priya Nair","confidence":0.61,"ambiguityReason":"tentative language","shouldAutoApply":0}

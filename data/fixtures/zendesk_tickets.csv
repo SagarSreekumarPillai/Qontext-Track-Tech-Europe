@@ -1,0 +1,3 @@
+Ticket ID,Status,Subject,Requester,Priority
+443,open,Onboarding API access issue,acme-admin@acme.com,high
+444,pending,SSO intermittent failures,ops@orion.com,urgent
