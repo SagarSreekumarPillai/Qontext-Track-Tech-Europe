@@ -38,6 +38,20 @@ export default function Home() {
   const [inputContent, setInputContent] = useState("");
   const [bulkPayload, setBulkPayload] = useState("");
   const [ingestMessage, setIngestMessage] = useState("");
+  const [attachedFileName, setAttachedFileName] = useState("");
+  const [previewStatus, setPreviewStatus] = useState<{
+    adapter: string;
+    count: number;
+    ok: boolean;
+    error?: string;
+    diagnostics?: {
+      totalRows: number;
+      parsedRows: number;
+      droppedRows: number;
+      inferredSourceCounts: Record<string, number>;
+      warnings: string[];
+    };
+  } | null>(null);
 
   const selectedEntity = useMemo(
     () => Object.values(state.entities).find((entity) => entity.filePath === selectedPath),
@@ -55,6 +69,7 @@ export default function Home() {
   );
 
   const dynamicFileGroups = useMemo(() => deriveFileGroups(state), [state]);
+  const lastChange = state.updateHistory[0];
 
   const challengeInsights = useMemo(() => {
     const allFacts = Object.values(state.entities).flatMap((entity) => entity.facts);
@@ -178,13 +193,13 @@ export default function Home() {
     setIngestMessage(`Ingested ${record.sourceType.toUpperCase()} ${record.sourceId}`);
   };
 
-  const ingestBulkPayload = async (attachedFileName?: string) => {
+  const ingestBulkPayload = async (fileName?: string) => {
     const payload = bulkPayload.trim();
     if (!payload) {
       setIngestMessage("Paste JSON array or CSV payload first.");
       return;
     }
-    const adapted = parseDatasetPayload(payload, attachedFileName);
+    const adapted = parseDatasetPayload(payload, fileName);
     const records: RawRecord[] = adapted.records;
 
     if (!records.length) {
@@ -206,10 +221,52 @@ export default function Home() {
     if (!file) return;
     const text = await file.text();
     setBulkPayload(text);
+    setAttachedFileName(file.name);
     const preview = parseDatasetPayload(text, file.name);
     setIngestMessage(
       `Loaded ${file.name}. Detected ${preview.adapterName} adapter with ${preview.records.length} compatible records.`
     );
+  };
+
+  const previewImportCompatibility = async () => {
+    const payload = bulkPayload.trim();
+    if (!payload) {
+      setPreviewStatus({ ok: false, adapter: "none", count: 0, error: "No payload provided." });
+      return;
+    }
+    try {
+      const res = await fetch("/api/import/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          payload,
+          fileName: attachedFileName || undefined,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        setPreviewStatus({
+          ok: false,
+          adapter: "unknown",
+          count: 0,
+          error: json.error ?? "Preview failed",
+        });
+        return;
+      }
+      setPreviewStatus({
+        ok: true,
+        adapter: json.adapter,
+        count: json.count,
+        diagnostics: json.diagnostics,
+      });
+    } catch {
+      setPreviewStatus({
+        ok: false,
+        adapter: "unknown",
+        count: 0,
+        error: "Preview request failed.",
+      });
+    }
   };
 
   return (
@@ -226,22 +283,57 @@ export default function Home() {
               Problem: fragmented operational truth across siloed systems. Solution: inspectable memory files + graph,
               with automatic updates for clear facts and human review for ambiguity.
             </p>
-            <p className="text-xs text-cyan-200">{integrationStatus}</p>
+            <p className="text-xs text-cyan-200">{integrationStatus.replace("Provider", "Extraction Engine")}</p>
           </div>
         </div>
       </header>
 
       <section className="grid grid-cols-2 gap-2 px-3 pt-3 md:grid-cols-3 xl:grid-cols-6">
-        <InsightCard label="Fragmented Sources" value={`${challengeInsights.uniqueSources}/5`} />
-        <InsightCard label="Memory Facts" value={String(challengeInsights.totalFacts)} />
-        <InsightCard label="Provenance Coverage" value={`${challengeInsights.provenanceCoverage}%`} />
-        <InsightCard label="Automation Rate" value={`${challengeInsights.automationRate}%`} />
-        <InsightCard label="Human Resolution" value={`${challengeInsights.humanResolutionRate}%`} />
-        <InsightCard label="High-Confidence Facts" value={`${challengeInsights.highConfidenceRate}%`} />
+        <InsightCard
+          label="Fragmented Sources"
+          value={`${challengeInsights.uniqueSources}/5`}
+          tooltip="How many source systems are currently represented in memory."
+        />
+        <InsightCard
+          label="Memory Facts"
+          value={String(challengeInsights.totalFacts)}
+          tooltip="Total structured facts currently stored across entities."
+        />
+        <InsightCard
+          label="Provenance Coverage"
+          value={`${challengeInsights.provenanceCoverage}%`}
+          tooltip="Percent of facts that are traceable to source records."
+        />
+        <InsightCard
+          label="Automation Rate"
+          value={`${challengeInsights.automationRate}%`}
+          tooltip="Share of resolved updates auto-applied without human review."
+        />
+        <InsightCard
+          label="Human Resolution"
+          value={`${challengeInsights.humanResolutionRate}%`}
+          tooltip="Share of queued ambiguous updates that humans resolved."
+        />
+        <InsightCard
+          label="High-Confidence Facts"
+          value={`${challengeInsights.highConfidenceRate}%`}
+          tooltip="Portion of facts currently above the high-confidence threshold."
+        />
       </section>
 
-      <section className="grid min-h-[calc(100vh-92px)] grid-cols-1 gap-3 p-3 xl:grid-cols-[280px_1fr_380px]">
-        <aside className="rounded-lg border border-slate-700/80 bg-[#0d1425] p-4">
+      <section className="px-3 pt-3">
+        <div className="rounded-lg border border-slate-700/70 bg-[#0d1425] px-3 py-2 text-sm">
+          <p className="text-slate-300">
+            <span className="text-cyan-300">Last Change:</span>{" "}
+            {lastChange
+              ? `${lastChange.action} · ${lastChange.factKey}: ${lastChange.oldValue} → ${lastChange.newValue}`
+              : "No updates yet. Ingest a record to see memory evolution."}
+          </p>
+        </div>
+      </section>
+
+      <section className="grid h-[calc(100vh-210px)] min-h-[620px] grid-cols-1 gap-3 overflow-hidden p-3 xl:grid-cols-[280px_1fr_380px]">
+        <aside className="h-full overflow-y-auto rounded-lg border border-slate-700/80 bg-[#0d1425] p-4">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300">Virtual File System</h2>
           <div className="mt-4 space-y-3 text-sm">
             {Object.entries(dynamicFileGroups).map(([folder, files]) => (
@@ -327,32 +419,93 @@ export default function Home() {
               >
                 Ingest Single Record
               </button>
-              <input
-                type="file"
-                accept=".json,.csv,.txt"
-                onChange={(event) => {
-                  const file = event.target.files?.[0] ?? null;
-                  void handleDatasetFile(file);
-                }}
-                className="w-full rounded border border-slate-600 bg-slate-900 px-2 py-1 text-xs"
-              />
-              <textarea
-                value={bulkPayload}
-                onChange={(event) => setBulkPayload(event.target.value)}
-                placeholder='Paste dataset payload: JSON array or CSV (sourceType,sourceId,content,timestamp)'
-                rows={5}
-                className="w-full rounded border border-slate-600 bg-slate-900 px-2 py-1 text-xs"
-              />
-              <button
-                onClick={() => void ingestBulkPayload()}
-                className="w-full rounded bg-cyan-500 px-2 py-1 text-xs font-semibold text-slate-950"
-              >
-                Ingest Dataset Payload
-              </button>
-              <p className="text-[10px] text-slate-400">
-                Compatible exports: Salesforce, HubSpot, Zendesk, Jira CSV; Slack JSON; generic JSON/CSV/TXT.
-              </p>
+              <details className="rounded border border-slate-700/70 bg-slate-900/40 p-2">
+                <summary className="cursor-pointer text-xs font-semibold text-slate-200">
+                  Advanced Import (bulk files and compatibility validation)
+                </summary>
+                <div className="mt-2 space-y-2">
+                  <input
+                    type="file"
+                    accept=".json,.csv,.txt"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0] ?? null;
+                      void handleDatasetFile(file);
+                    }}
+                    className="w-full rounded border border-slate-600 bg-slate-900 px-2 py-1 text-xs"
+                  />
+                  <textarea
+                    value={bulkPayload}
+                    onChange={(event) => setBulkPayload(event.target.value)}
+                    placeholder='Paste dataset payload: JSON array or CSV (sourceType,sourceId,content,timestamp)'
+                    rows={5}
+                    className="w-full rounded border border-slate-600 bg-slate-900 px-2 py-1 text-xs"
+                  />
+                  <button
+                    onClick={() => void ingestBulkPayload()}
+                    className="w-full rounded bg-cyan-500 px-2 py-1 text-xs font-semibold text-slate-950"
+                  >
+                    Ingest Dataset Payload
+                  </button>
+                  <button
+                    onClick={previewImportCompatibility}
+                    className="w-full rounded border border-cyan-400/60 px-2 py-1 text-xs font-semibold text-cyan-200 hover:bg-cyan-500/10"
+                  >
+                    Validate Import Compatibility
+                  </button>
+                  {previewStatus ? (
+                    <p className={`text-[11px] ${previewStatus.ok ? "text-emerald-300" : "text-rose-300"}`}>
+                      {previewStatus.ok
+                        ? `Adapter ${previewStatus.adapter} recognized ${previewStatus.count} records.`
+                        : `Validation failed: ${previewStatus.error}`}
+                    </p>
+                  ) : null}
+              {previewStatus?.ok && previewStatus.diagnostics ? (
+                <div className="rounded border border-slate-700/70 bg-slate-900/60 p-2 text-[10px] text-slate-300">
+                  <p className="font-semibold text-cyan-200">Data Quality Report</p>
+                  <p>
+                    Parsed {previewStatus.diagnostics.parsedRows}/{previewStatus.diagnostics.totalRows} rows (dropped{" "}
+                    {previewStatus.diagnostics.droppedRows})
+                  </p>
+                  <p>
+                    Inferred sources:{" "}
+                    {Object.entries(previewStatus.diagnostics.inferredSourceCounts)
+                      .map(([k, v]) => `${k}:${v}`)
+                      .join(", ") || "none"}
+                  </p>
+                  {previewStatus.diagnostics.warnings.length > 0 ? (
+                    <p className="text-amber-300">
+                      Warnings: {previewStatus.diagnostics.warnings.slice(0, 2).join(" | ")}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+                  <p className="text-[10px] text-slate-400">
+                    Compatible exports: Salesforce, HubSpot, Zendesk, Jira CSV; Slack JSON; generic JSON/CSV/TXT.
+                  </p>
+                </div>
+              </details>
               {ingestMessage ? <p className="text-[11px] text-cyan-200">{ingestMessage}</p> : null}
+            </div>
+          </div>
+
+          <div className="mt-6 border-t border-slate-700/60 pt-4">
+            <h3 className="text-xs uppercase tracking-[0.14em] text-slate-400">Connector Templates</h3>
+            <div className="mt-2 space-y-2 text-[10px] text-slate-300">
+              <p className="rounded bg-slate-900/70 px-2 py-1">
+                Salesforce CSV: <span className="text-cyan-200">Id, Account Name, Account Owner, Stage, Amount</span>
+              </p>
+              <p className="rounded bg-slate-900/70 px-2 py-1">
+                HubSpot CSV: <span className="text-cyan-200">Record ID, Deal Name, Deal Owner, Deal Stage, Amount</span>
+              </p>
+              <p className="rounded bg-slate-900/70 px-2 py-1">
+                Zendesk CSV: <span className="text-cyan-200">Ticket ID, Status, Subject, Requester, Priority</span>
+              </p>
+              <p className="rounded bg-slate-900/70 px-2 py-1">
+                Jira CSV: <span className="text-cyan-200">Issue key, Summary, Status, Priority, Assignee</span>
+              </p>
+              <p className="rounded bg-slate-900/70 px-2 py-1">
+                Slack JSON: <span className="text-cyan-200">{`{"messages":[{"text":"...","ts":"..."}]}`}</span>
+              </p>
             </div>
           </div>
 
@@ -371,7 +524,7 @@ export default function Home() {
           </div>
         </aside>
 
-        <section className="rounded-lg border border-slate-700/80 bg-[#0d1425] p-5">
+        <section className="h-full overflow-y-auto rounded-lg border border-slate-700/80 bg-[#0d1425] p-5">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300">Memory File Viewer</h2>
           {!selectedEntity ? (
             <p className="mt-4 text-slate-400">Choose a file from the virtual file system.</p>
@@ -409,11 +562,16 @@ export default function Home() {
           )}
         </section>
 
-        <aside className="rounded-lg border border-slate-700/80 bg-[#0d1425] p-4">
+        <aside className="h-full overflow-y-auto rounded-lg border border-slate-700/80 bg-[#0d1425] p-4">
           <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-300">Context Inspector</h2>
 
           <div className="mt-3 rounded-lg border border-slate-700/70 bg-slate-900/40 p-3">
-            <h3 className="text-xs uppercase tracking-[0.12em] text-slate-400">Provenance</h3>
+            <h3
+              className="text-xs uppercase tracking-[0.12em] text-slate-400"
+              title="Trace each selected fact back to its source record and confidence."
+            >
+              Provenance
+            </h3>
             {!selectedFact ? (
               <p className="mt-2 text-sm text-slate-400">Select a fact to inspect source-level evidence.</p>
             ) : (
@@ -442,7 +600,12 @@ export default function Home() {
           </div>
 
           <div className="mt-3 rounded-lg border border-slate-700/70 bg-slate-900/40 p-3">
-            <h3 className="text-xs uppercase tracking-[0.12em] text-slate-400">Relationship Graph</h3>
+            <h3
+              className="text-xs uppercase tracking-[0.12em] text-slate-400"
+              title="Machine-usable links between entities extracted from source evidence."
+            >
+              Relationship Graph
+            </h3>
             <div className="mt-2 space-y-1 text-sm">
               {state.relationships.map((edge) => (
                 <p key={edge.id} className="rounded bg-slate-800/80 px-2 py-1 text-slate-200">
@@ -453,7 +616,12 @@ export default function Home() {
           </div>
 
           <div className="mt-3 rounded-lg border border-slate-700/70 bg-slate-900/40 p-3">
-            <h3 className="text-xs uppercase tracking-[0.12em] text-slate-400">Challenge Alignment</h3>
+            <h3
+              className="text-xs uppercase tracking-[0.12em] text-slate-400"
+              title="Live scorecard showing how current system behavior maps to challenge criteria."
+            >
+              Challenge Alignment
+            </h3>
             <div className="mt-2 space-y-1 text-xs text-slate-300">
               <p className="rounded bg-slate-800/80 px-2 py-1">1) Fragmented sources ingested: {challengeInsights.uniqueSources}/5</p>
               <p className="rounded bg-slate-800/80 px-2 py-1">
@@ -472,7 +640,12 @@ export default function Home() {
           </div>
 
           <div className="mt-3 rounded-lg border border-slate-700/70 bg-slate-900/40 p-3">
-            <h3 className="text-xs uppercase tracking-[0.12em] text-slate-400">Human Review Queue</h3>
+            <h3
+              className="text-xs uppercase tracking-[0.12em] text-slate-400"
+              title="Ambiguous or low-confidence fact updates requiring explicit human approval."
+            >
+              Human Review Queue
+            </h3>
             <div className="mt-2 space-y-2">
               {pendingReviews.length === 0 ? (
                 <p className="text-sm text-emerald-300">No pending ambiguity. System is auto-resolving.</p>
@@ -527,9 +700,9 @@ export default function Home() {
   );
 }
 
-function InsightCard({ label, value }: { label: string; value: string }) {
+function InsightCard({ label, value, tooltip }: { label: string; value: string; tooltip: string }) {
   return (
-    <article className="rounded-lg border border-slate-700/70 bg-[#0d1425] px-3 py-2">
+    <article className="rounded-lg border border-slate-700/70 bg-[#0d1425] px-3 py-2" title={tooltip}>
       <p className="text-[11px] uppercase tracking-[0.13em] text-slate-400">{label}</p>
       <p className="mt-1 text-lg font-semibold text-cyan-200">{value}</p>
     </article>
